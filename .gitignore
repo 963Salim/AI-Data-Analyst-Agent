@@ -1,0 +1,11 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+
+# Large/local data files
+Dataset/
+data/processed/*.csv
+
+# Logs/cache
+*.log
