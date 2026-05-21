@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-from src.llm_agent import run_llm_agent
+from src.agent import run_agent
 from src.tools import retail_summary
 
 
@@ -209,18 +209,6 @@ def home():
             margin-top: 6px;
         }}
 
-        .mode {{
-            display: inline-block;
-            background: #111827;
-            border: 1px solid #334155;
-            color: #cbd5e1;
-            padding: 7px 10px;
-            border-radius: 10px;
-            font-family: Consolas, monospace;
-            font-size: 13px;
-            margin-top: 6px;
-        }}
-
         .answer {{
             color: #e5e7eb;
             line-height: 1.6;
@@ -310,11 +298,11 @@ def home():
 <body>
     <main class="page">
         <section class="hero">
-            <div class="eyebrow">Agentic Data Analytics</div>
+            <div class="eyebrow">Retail Data Analytics</div>
             <h1>AI Retail Data Analyst Agent</h1>
             <p class="subtitle">
                 A browser-based analytics assistant for the Online Retail dataset.
-                The agent maps natural-language questions to controlled analysis tools
+                The application maps natural-language questions to controlled analysis tools
                 and returns structured business insights as tables or summaries.
             </p>
 
@@ -424,10 +412,6 @@ def home():
                         <div><strong>Tool used</strong></div>
                         <span class="tool">${{result.tool}}</span>
                     </div>
-                    <div>
-                        <div><strong>Agent mode</strong></div>
-                        <span class="mode">${{result.agent_mode || "unknown"}}</span>
-                    </div>
                 </div>
                 <p class="answer"><strong>Answer:</strong> ${{result.answer}}</p>
             `;
@@ -491,7 +475,7 @@ def home():
 @app.post("/ask")
 def ask_agent(request: QuestionRequest) -> dict[str, Any]:
     try:
-        result = run_llm_agent(request.question)
+        result = run_agent(request.question)
 
         return {
             "ok": True,
@@ -499,7 +483,7 @@ def ask_agent(request: QuestionRequest) -> dict[str, Any]:
             "tool": result["tool"],
             "answer": result["answer"],
             "data": result["data"],
-            "agent_mode": result.get("agent_mode", "unknown"),
+            "agent_mode": "rule_based_tool_router",
         }
 
     except Exception as exc:
