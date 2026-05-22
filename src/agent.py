@@ -1,63 +1,108 @@
 from typing import Any
 
-from src.tools import (
-    describe_dataset,
-    check_missing_values,
-    top_products_by_revenue,
-    sales_by_country,
-    monthly_revenue_trend,
-    returns_analysis,
-    retail_summary,
-)
+from src.subagents.data_quality_agent import handle_data_quality_question
+from src.subagents.overview_agent import handle_overview_question
+from src.subagents.returns_agent import handle_returns_question
+from src.subagents.sales_agent import handle_sales_question
+from src.subagents.trend_agent import handle_trend_question
 
 
-def run_agent(user_question: str) -> dict[str, Any]:
-    question = user_question.lower()
+def route_to_subagent(user_question: str) -> str:
+    q = user_question.lower()
 
-    if "missing" in question or "fehlende" in question or "null" in question:
-        return {
-            "tool": "check_missing_values",
-            "answer": "I checked the dataset for missing values.",
-            "data": check_missing_values(),
-        }
+    if (
+        "return" in q
+        or "returns" in q
+        or "cancellation" in q
+        or "cancellations" in q
+        or "negative quantity" in q
+        or "rückgabe" in q
+        or "retoure" in q
+        or "storno" in q
+    ):
+        return "returns_agent"
 
-    if "top product" in question or "products" in question or "produkt" in question:
-        return {
-            "tool": "top_products_by_revenue",
-            "answer": "I identified the top products by revenue.",
-            "data": top_products_by_revenue(limit=10),
-        }
+    if (
+        "month" in q
+        or "monthly" in q
+        or "trend" in q
+        or "time" in q
+        or "development" in q
+        or "monat" in q
+        or "zeit" in q
+        or "entwicklung" in q
+    ):
+        return "trend_agent"
 
-    if "country" in question or "länder" in question or "land" in question:
-        return {
-            "tool": "sales_by_country",
-            "answer": "I summarized sales by country.",
-            "data": sales_by_country(limit=10),
-        }
+    if (
+        "missing" in q
+        or "null" in q
+        or "nan" in q
+        or "columns" in q
+        or "structure" in q
+        or "describe" in q
+        or "overview" in q
+        or "fehlende" in q
+        or "spalten" in q
+        or "struktur" in q
+    ):
+        return "data_quality_agent"
 
-    if "month" in question or "monthly" in question or "monat" in question:
-        return {
-            "tool": "monthly_revenue_trend",
-            "answer": "I calculated the monthly revenue trend.",
-            "data": monthly_revenue_trend(),
-        }
+    if (
+        "product" in q
+        or "products" in q
+        or "item" in q
+        or "items" in q
+        or "country" in q
+        or "countries" in q
+        or "market" in q
+        or "markets" in q
+        or "revenue" in q
+        or "sales" in q
+        or "umsatz" in q
+        or "länder" in q
+        or "land" in q
+    ):
+        return "sales_agent"
 
-    if "return" in question or "rückgabe" in question or "storno" in question:
-        return {
-            "tool": "returns_analysis",
-            "answer": "I analyzed returns in the dataset.",
-            "data": returns_analysis(),
-        }
+    return "overview_agent"
 
-    if "describe" in question or "overview" in question or "übersicht" in question:
-        return {
-            "tool": "describe_dataset",
-            "answer": "I created a structural overview of the dataset.",
-            "data": describe_dataset(),
-        }
 
-    return {
-        "tool": "retail_summary",
-        "answer": "I created a general retail summary.",
-        "data": retail_summary(),
-    }
+def normalize_engine(engine: str) -> str:
+    engine = engine.lower().strip()
+
+    if engine not in {"pandas", "spark"}:
+        return "pandas"
+
+    return engine
+
+
+def run_agent(user_question: str, engine: str = "pandas") -> dict[str, Any]:
+    engine = normalize_engine(engine)
+    selected_subagent = route_to_subagent(user_question)
+
+    if selected_subagent == "returns_agent":
+        result = handle_returns_question(user_question)
+        effective_engine = "pandas"
+
+    elif selected_subagent == "trend_agent":
+        result = handle_trend_question(user_question, engine=engine)
+        effective_engine = engine
+
+    elif selected_subagent == "data_quality_agent":
+        result = handle_data_quality_question(user_question)
+        effective_engine = "pandas"
+
+    elif selected_subagent == "sales_agent":
+        result = handle_sales_question(user_question, engine=engine)
+        effective_engine = engine
+
+    else:
+        result = handle_overview_question(user_question)
+        effective_engine = "pandas"
+
+    result["agent_mode"] = "rule_based_subagent_orchestration"
+    result["orchestrator_route"] = selected_subagent
+    result["analysis_engine"] = effective_engine
+
+    return result
