@@ -2,7 +2,7 @@ import re
 
 
 def extract_limit(text: str, default: int = 10, max_limit: int = 50) -> int:
-    match = re.search(r"\b(\d{1,2})\b", text)
+    match = re.search(r"\b(\d+)\b", text)
 
     if not match:
         return default

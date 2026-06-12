@@ -13,7 +13,6 @@ app = FastAPI(title="AI Retail Data Analyst Agent")
 
 class QuestionRequest(BaseModel):
     question: str
-    engine: str = "pandas"
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -149,11 +148,11 @@ def home():
 
         .input-row {{
             display: grid;
-            grid-template-columns: 1fr 150px 150px;
+            grid-template-columns: 1fr 150px;
             gap: 14px;
         }}
 
-        input, select {{
+        input {{
             width: 100%;
             padding: 16px 18px;
             border-radius: 14px;
@@ -164,7 +163,7 @@ def home():
             outline: none;
         }}
 
-        input:focus, select:focus {{
+        input:focus {{
             border-color: #60a5fa;
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22);
         }}
@@ -339,10 +338,6 @@ def home():
         <section class="card">
             <div class="input-row">
                 <input id="questionInput" type="text" value="Show sales by country." placeholder="Ask a question about the retail dataset...">
-                <select id="engineSelect">
-                    <option value="pandas" selected>pandas</option>
-                    <option value="spark">PySpark</option>
-                </select>
                 <button class="primary" onclick="askAgent()">Ask Agent</button>
             </div>
             <div id="loading" class="loading" style="display:none;">Analyzing request...</div>
@@ -358,7 +353,6 @@ def home():
 
         async function askAgent() {{
             const question = document.getElementById("questionInput").value.trim();
-            const engine = document.getElementById("engineSelect").value;
             const resultDiv = document.getElementById("result");
             const loadingDiv = document.getElementById("loading");
 
@@ -375,7 +369,7 @@ def home():
                 const response = await fetch("/ask", {{
                     method: "POST",
                     headers: {{ "Content-Type": "application/json" }},
-                    body: JSON.stringify({{ question, engine }})
+                    body: JSON.stringify({{ question }})
                 }});
 
                 const result = await response.json();
@@ -422,10 +416,6 @@ def home():
                     <div>
                         <div><strong>Tool used</strong></div>
                         <span class="tool">${{result.tool}}</span>
-                    </div>
-                    <div>
-                        <div><strong>Engine</strong></div>
-                        <span class="tool">${{result.analysis_engine || "pandas"}}</span>
                     </div>
                 </div>
                 <p class="answer"><strong>Answer:</strong> ${{result.answer}}</p>
@@ -490,7 +480,7 @@ def home():
 @app.post("/ask")
 def ask_agent(request: QuestionRequest) -> dict[str, Any]:
     try:
-        result = run_agent(request.question, engine=request.engine)
+        result = run_agent(request.question)
 
         return {
             "ok": True,
@@ -498,7 +488,6 @@ def ask_agent(request: QuestionRequest) -> dict[str, Any]:
             "tool": result["tool"],
             "sub_agent": result.get("sub_agent"),
             "agent_mode": result.get("agent_mode"),
-            "analysis_engine": result.get("analysis_engine"),
             "orchestrator_route": result.get("orchestrator_route"),
             "answer": result["answer"],
             "data": result["data"],

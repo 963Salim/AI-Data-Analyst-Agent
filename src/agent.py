@@ -68,41 +68,25 @@ def route_to_subagent(user_question: str) -> str:
     return "overview_agent"
 
 
-def normalize_engine(engine: str) -> str:
-    engine = engine.lower().strip()
-
-    if engine not in {"pandas", "spark"}:
-        return "pandas"
-
-    return engine
-
-
-def run_agent(user_question: str, engine: str = "pandas") -> dict[str, Any]:
-    engine = normalize_engine(engine)
+def run_agent(user_question: str) -> dict[str, Any]:
     selected_subagent = route_to_subagent(user_question)
 
     if selected_subagent == "returns_agent":
         result = handle_returns_question(user_question)
-        effective_engine = "pandas"
 
     elif selected_subagent == "trend_agent":
-        result = handle_trend_question(user_question, engine=engine)
-        effective_engine = engine
+        result = handle_trend_question(user_question)
 
     elif selected_subagent == "data_quality_agent":
         result = handle_data_quality_question(user_question)
-        effective_engine = "pandas"
 
     elif selected_subagent == "sales_agent":
-        result = handle_sales_question(user_question, engine=engine)
-        effective_engine = engine
+        result = handle_sales_question(user_question)
 
     else:
         result = handle_overview_question(user_question)
-        effective_engine = "pandas"
 
     result["agent_mode"] = "rule_based_subagent_orchestration"
     result["orchestrator_route"] = selected_subagent
-    result["analysis_engine"] = effective_engine
 
     return result
