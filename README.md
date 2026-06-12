@@ -2,21 +2,22 @@
 
 AI Retail Data Analyst Agent ist eine browserbasierte Analytics-Web-App zur Analyse eines Online-Retail-Datensatzes über natürlichsprachliche Nutzerfragen.
 
-Die Anwendung ordnet Nutzerfragen kontrollierten Analysefunktionen zu und gibt die Ergebnisse als KPI-Karten, Tabellen oder strukturierte Zusammenfassungen zurück. Im Backend wird eine regelbasierte Sub-Agent-Architektur verwendet: Ein Orchestrator leitet die Nutzerfrage an spezialisierte Analyse-Agenten weiter.
+Die Anwendung übersetzt typische Business-Fragen in kontrollierte Analysefunktionen und gibt die Ergebnisse als KPI-Karten, Tabellen oder strukturierte Zusammenfassungen zurück. Im Backend arbeitet eine regelbasierte Sub-Agent-Architektur: Ein Orchestrator analysiert die Nutzerfrage und leitet sie an einen spezialisierten Analyse-Agenten weiter.
 
-Standardmäßig nutzt das Projekt pandas-basierte Analysefunktionen. Zusätzlich enthält das Projekt eine prototypische lokale PySpark-Erweiterung für ausgewählte KPI-Aggregationen, um eine skalierbare Alternative zur pandas-basierten Analysepipeline zu demonstrieren.
+Das Projekt nutzt eine pandas-basierte Analysepipeline. Es führt keinen frei generierten Code aus und verwendet in der aktuellen Version kein externes LLM.
 
 ## Features
 
 - Browserbasierte Analytics-Oberfläche mit FastAPI
-- Analyse von über 500.000 Online-Retail-Transaktionen
-- Natürlichsprachliche Nutzerfragen für typische Retail-Analysen
-- Regelbasierte Sub-Agent-Architektur mit spezialisierten Analyse-Agenten
+- Analyse eines Online-Retail-Datensatzes mit über 500.000 Transaktionen
+- Natürlichsprachliche Fragen für typische Retail-Analysen
+- Regelbasierter Orchestrator mit spezialisierten Sub-Agenten
 - Kontrollierte pandas-Analysefunktionen statt freier Code-Ausführung
-- Prototypische lokale PySpark-Aggregationen als skalierbare Alternative für ausgewählte Analysen
 - KPI-Karten für zentrale Retail-Kennzahlen
-- Tabellarische Ergebnisse für Umsatz-, Produkt-, Länder-, Monats- und Retourenanalysen
+- Tabellenansichten für Umsatz-, Produkt-, Länder-, Monats- und Retourenanalysen
 - Datenpipeline zur Bereinigung und Anreicherung der Rohdaten
+- REST-API über den `/ask`-Endpoint
+- Einfache lokale Ausführung über Browser, API oder CLI
 
 ## Beispiel-Fragen
 
@@ -31,9 +32,9 @@ Are there missing values?
 Give me a general summary.
 ```
 
-## Sub-Agent-Architektur
+## Architektur
 
-Das Projekt verwendet eine modulare regelbasierte Agent-Struktur:
+Das Projekt verwendet eine modulare, regelbasierte Agent-Struktur:
 
 ```text
 Nutzerfrage
@@ -43,7 +44,9 @@ Nutzerfrage
 → strukturierte Ausgabe in der Web-App
 ```
 
-### Verfügbare Sub-Agenten
+Der Vorteil dieser Architektur ist, dass die Analysewege transparent, kontrollierbar und erweiterbar bleiben. Jede Nutzerfrage wird nicht frei ausgeführt, sondern gezielt einer vorhandenen Analysefunktion zugeordnet.
+
+## Verfügbare Sub-Agenten
 
 | Sub-Agent | Aufgabe | Beispiel-Tools |
 |---|---|---|
@@ -53,15 +56,13 @@ Nutzerfrage
 | Data Quality Agent | Fehlende Werte und Datensatzstruktur | `check_missing_values`, `describe_dataset` |
 | Overview Agent | Allgemeine Retail-Zusammenfassung | `retail_summary` |
 
-Diese Struktur macht den Analyseprozess transparent, kontrolliert und einfach erweiterbar.
-
 ## Tech Stack
 
 - Python
 - FastAPI
 - pandas
-- PySpark
 - Pydantic
+- Uvicorn
 - HTML/CSS
 - JavaScript
 - Git/GitHub
@@ -113,43 +114,6 @@ is_valid_sale
 
 Diese Variablen werden später für Umsatz-, Produkt-, Länder-, Monats- und Retourenanalysen verwendet.
 
-## Lokale PySpark-Erweiterung
-
-Neben den standardmäßigen pandas-basierten Analysefunktionen enthält das Projekt eine prototypische PySpark-Erweiterung.
-
-Die Spark-Ausführung erfolgt lokal über:
-
-```text
-master("local[*]")
-```
-
-Dadurch wird keine Cloud-Infrastruktur benötigt. Es werden weder Azure noch Databricks noch Hadoop verwendet.
-
-Die PySpark-Erweiterung dient dazu, ausgewählte Aggregationen als skalierbare Alternative zur pandas-Pipeline umzusetzen. Aktuell wird beispielhaft die Länderanalyse mit PySpark nachgebaut:
-
-```text
-retail_clean.csv
-→ PySpark DataFrame
-→ Filterung gültiger Verkäufe
-→ Aggregation nach Ländern
-→ Umsatz, Menge und Anzahl der Bestellungen
-→ strukturierte Ausgabe als list[dict]
-```
-
-Die Spark-Funktionen befinden sich in:
-
-```text
-src/spark_tools.py
-```
-
-Ein einfacher Vergleich zwischen pandas- und PySpark-Ergebnis kann ausgeführt werden mit:
-
-```bash
-python scripts/test_spark_tools.py
-```
-
-Die PySpark-Erweiterung ist als lokaler Prototyp gedacht und ergänzt die bestehende pandas-Pipeline, ohne diese zu ersetzen.
-
 ## Projektstruktur
 
 ```text
@@ -158,13 +122,11 @@ AI-Data-Analyst-Agent/
 ├── scripts/
 │   ├── inspect_dataset.py
 │   ├── prepare_data.py
-│   ├── test_tools.py
-│   └── test_spark_tools.py
+│   └── test_tools.py
 │
 ├── src/
 │   ├── agent.py
 │   ├── tools.py
-│   ├── spark_tools.py
 │   └── subagents/
 │       ├── __init__.py
 │       ├── common.py
@@ -187,7 +149,7 @@ AI-Data-Analyst-Agent/
 2. Das FastAPI-Backend empfängt die Anfrage über den `/ask`-Endpoint.
 3. Der Orchestrator in `src/agent.py` analysiert die Frage regelbasiert.
 4. Die Frage wird an einen passenden Sub-Agenten weitergeleitet.
-5. Der Sub-Agent ruft eine kontrollierte pandas-Analysefunktion aus `src/tools.py` auf. Ergänzend enthält `src/spark_tools.py` prototypische PySpark-Versionen ausgewählter Aggregationen.
+5. Der Sub-Agent ruft eine kontrollierte pandas-Analysefunktion aus `src/tools.py` auf.
 6. Das Ergebnis wird an die Web-App zurückgegeben und als Tabelle oder Zusammenfassung angezeigt.
 
 Beispiel:
@@ -203,6 +165,39 @@ Ausgabe:
 Umsatz, Menge und Anzahl der Bestellungen nach Ländern.
 ```
 
+## Installation
+
+Repository klonen und in das Projektverzeichnis wechseln:
+
+```bash
+git clone <repository-url>
+cd AI-Data-Analyst-Agent
+```
+
+Virtuelle Umgebung erstellen und aktivieren:
+
+```bash
+python -m venv .venv
+```
+
+Windows:
+
+```bash
+.venv\Scripts\activate
+```
+
+macOS/Linux:
+
+```bash
+source .venv/bin/activate
+```
+
+Abhängigkeiten installieren:
+
+```bash
+pip install -r requirements.txt
+```
+
 ## Daten vorbereiten
 
 Den Rohdatensatz unter folgendem Pfad ablegen:
@@ -211,7 +206,7 @@ Den Rohdatensatz unter folgendem Pfad ablegen:
 Dataset/archive/online_retail.csv
 ```
 
-Dann ausführen:
+Dann die Datenpipeline ausführen:
 
 ```bash
 python scripts/prepare_data.py
@@ -219,16 +214,16 @@ python scripts/prepare_data.py
 
 ## Web-App starten
 
-FastAPI-App starten:
+FastAPI-App lokal starten:
 
 ```bash
-python -m uvicorn webapp:app --host 127.0.0.1 --port 8001
+python -m uvicorn webapp:app --host 127.0.0.1 --port 8002
 ```
 
 Danach im Browser öffnen:
 
 ```text
-http://127.0.0.1:8001
+http://127.0.0.1:8002
 ```
 
 Unter Windows kann die App alternativ per Doppelklick gestartet werden:
@@ -236,6 +231,16 @@ Unter Windows kann die App alternativ per Doppelklick gestartet werden:
 ```text
 start_app.bat
 ```
+
+## CLI-Nutzung
+
+Neben der Web-App kann der Agent auch über die Kommandozeile ausgeführt werden:
+
+```bash
+python main.py
+```
+
+Danach können Fragen direkt im Terminal eingegeben werden. Mit `exit` oder `quit` wird das Programm beendet.
 
 ## API-Nutzung
 
@@ -271,16 +276,14 @@ Beispiel-Response:
 Die automatisch generierte FastAPI-Dokumentation ist verfügbar unter:
 
 ```text
-http://127.0.0.1:8001/docs
+http://127.0.0.1:8002/docs
 ```
 
 ## Beispiel-Analysen
 
 ### Sales by Country
 
-Berechnet Umsatz, Menge und Anzahl der Bestellungen nach Ländern.
-
-Für diese Analyse existiert zusätzlich eine prototypische PySpark-Implementierung, die dieselbe Aggregation lokal mit Spark DataFrames berechnet.
+Berechnet Umsatz, verkaufte Menge und Anzahl der Bestellungen nach Ländern.
 
 ### Top Products by Revenue
 
@@ -298,6 +301,10 @@ Analysiert Retourenzeilen, Retourenquote, zurückgegebene Menge und Rückgabewer
 
 Prüft, ob im bereinigten Datensatz noch fehlende Werte vorhanden sind.
 
+### Retail Summary
+
+Gibt eine kompakte Übersicht über zentrale Kennzahlen des bereinigten Datensatzes zurück.
+
 ## Ziel des Projekts
 
 Das Projekt zeigt, wie natürlichsprachliche Nutzerfragen kontrolliert in strukturierte Datenanalysen übersetzt werden können.
@@ -310,7 +317,7 @@ Im Fokus stehen:
 - Regelbasiertes Tool Routing
 - Modulare Sub-Agent-Architektur
 - Darstellung von Retail-KPIs und Analyseergebnissen in einer Web-Oberfläche
-- Prototypische Erweiterung ausgewählter KPI-Aggregationen mit lokal ausgeführtem PySpark
+- Bereitstellung einer einfachen API für analytische Nutzerfragen
 
 Der Analyseprozess folgt dabei diesem Muster:
 
@@ -322,8 +329,8 @@ Natürlichsprachliche Frage
 → strukturiertes Ergebnis
 ```
 
-## Hinweis
+## Hinweise
 
-Dieses Projekt verwendet kein externes LLM und keine kostenpflichtige API. Die aktuelle Version basiert auf regelbasiertem Tool Routing und modularer Sub-Agent-Orchestrierung.
+Dieses Projekt verwendet in der aktuellen Version kein externes LLM und keine kostenpflichtige API. Die Analyse basiert auf regelbasiertem Tool Routing und modularer Sub-Agent-Orchestrierung.
 
-Die PySpark-Erweiterung wird lokal ausgeführt und benötigt keine Cloud-Infrastruktur. Sie dient als Prototyp, um ausgewählte pandas-Aggregationen zusätzlich mit Spark DataFrames umzusetzen.
+Lokale Datendateien, vorbereitete CSV-Dateien, virtuelle Umgebungen und Umgebungsvariablen sollten nicht versioniert werden.
