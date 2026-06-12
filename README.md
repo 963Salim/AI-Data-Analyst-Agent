@@ -165,39 +165,6 @@ Ausgabe:
 Umsatz, Menge und Anzahl der Bestellungen nach Ländern.
 ```
 
-## Installation
-
-Repository klonen und in das Projektverzeichnis wechseln:
-
-```bash
-git clone <repository-url>
-cd AI-Data-Analyst-Agent
-```
-
-Virtuelle Umgebung erstellen und aktivieren:
-
-```bash
-python -m venv .venv
-```
-
-Windows:
-
-```bash
-.venv\Scripts\activate
-```
-
-macOS/Linux:
-
-```bash
-source .venv/bin/activate
-```
-
-Abhängigkeiten installieren:
-
-```bash
-pip install -r requirements.txt
-```
-
 ## Daten vorbereiten
 
 Den Rohdatensatz unter folgendem Pfad ablegen:
