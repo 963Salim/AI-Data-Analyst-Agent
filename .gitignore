@@ -6,6 +6,10 @@ __pycache__/
 # Large/local data files
 Dataset/
 data/processed/*.csv
+data/cache/
+
+# Generated exports
+exports/
 
 # Logs/cache
 *.log

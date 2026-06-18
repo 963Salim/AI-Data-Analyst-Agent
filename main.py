@@ -3,7 +3,7 @@ from typing import Any
 
 import pandas as pd
 
-from src.agent import run_agent
+from src.agentic_system import run_agent
 
 
 def print_result(data: Any) -> None:
