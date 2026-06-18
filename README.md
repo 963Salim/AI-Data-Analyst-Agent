@@ -1,8 +1,8 @@
-# AI Retail Data Analyst Agent
-
 ## English Version
 
-AI Retail Data Analyst Agent is a local analytics web app for exploring an Online Retail dataset through natural-language questions.
+AI Retail Data Analyst Agent is a local analytics web app for exploring a large Online Retail transaction dataset through natural-language questions.
+
+The dataset contains more than 500,000 transaction rows from an online retail business, including information such as invoice numbers, products, quantities, prices, customers, countries, invoice dates, sales revenue and returns. This makes it suitable for typical business analytics tasks such as revenue analysis, product performance, customer analysis, monthly trends, return behavior, data-quality checks and advanced customer or basket analysis.
 
 The project combines a FastAPI web interface, controlled analytics tools, a local Ollama LLM, pandas-based standard analyses, cached PySpark advanced analytics and a Power BI export pipeline. The goal is to show how business questions can be translated into safe, structured and reproducible data analysis workflows.
 
@@ -411,7 +411,9 @@ The project combines several practical data skills:
 
 ## Deutsche Version
 
-AI Retail Data Analyst Agent ist eine lokale Analytics-Web-App zur Analyse eines Online-Retail-Datensatzes über natürlichsprachliche Fragen.
+AI Retail Data Analyst Agent ist eine lokale Analytics-Web-App zur Analyse eines großen Online-Retail-Transaktionsdatensatzes über natürlichsprachliche Fragen.
+
+Der Datensatz umfasst mehr als 500.000 Transaktionszeilen eines Online-Retail-Geschäfts und enthält unter anderem Informationen zu Rechnungsnummern, Produkten, Mengen, Preisen, Kunden, Ländern, Rechnungsdaten, Umsätzen und Retouren. Dadurch eignet sich der Datensatz sehr gut für typische Business-Analytics-Aufgaben wie Umsatzanalysen, Produktperformance, Kundenanalysen, monatliche Trends, Retourenverhalten, Datenqualitätsprüfungen sowie fortgeschrittene Kunden- oder Warenkorbanalysen.
 
 Das Projekt kombiniert eine FastAPI-Weboberfläche, kontrollierte Analysefunktionen, ein lokales Ollama-LLM, pandas-basierte Standardanalysen, gecachte PySpark-Analysen für fortgeschrittene Auswertungen sowie ein Power-BI-Exportskript. Ziel ist es zu zeigen, wie typische Business-Fragen sicher, strukturiert und reproduzierbar in Datenanalysen übersetzt werden können.
 
